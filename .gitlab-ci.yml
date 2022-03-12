@@ -1,0 +1,37 @@
+stages:
+  - staging
+  - production
+  - mr-develop
+
+staging:
+  before_script:
+    - gem install dpl
+    - curl https://cli-assets.heroku.com/install.sh | sh
+  stage: staging
+  image: ruby:2.4
+  script:
+    - dpl --provider=heroku --app=$HEROKU_APP_STAGING --api-key=$HEROKU_API_KEY
+  only:
+    - staging
+
+production:
+  before_script:
+    - gem install dpl
+    - curl https://cli-assets.heroku.com/install.sh | sh
+  stage: production
+  image: ruby:2.4
+  script:
+    - dpl --provider=heroku --app=$HEROKU_APP_PRODUCTION --api-key=$HEROKU_API_KEY
+  only:
+    - main
+
+mr-develop:
+  stage: mr-develop
+  image: maven:latest
+  script:
+    - mvn test
+  only:
+    refs:
+      - merge_requests
+    variables:
+      - $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "develop"
